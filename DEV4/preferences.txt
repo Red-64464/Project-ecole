@@ -1,0 +1,4 @@
+track0=C:\Users\MediaMonster\Desktop\64464-1\examples of sounds\Hihat1.wav
+track1=
+track2=
+track3=

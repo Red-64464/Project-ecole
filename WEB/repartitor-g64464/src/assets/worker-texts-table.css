@@ -1,0 +1,171 @@
+/* Ce fichier donne le style des tableaux traducteur/editeur.
+   Il rend les listes de textes lisibles et proches du style du PDF.
+   Il est separe pour garder WorkerTextsTable.vue plus court. */
+.worker-texts-view {
+  width: 100%;
+}
+
+.worker-texts-view .table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.worker-table {
+  width: 100%;
+  min-width: 930px;
+  border-collapse: collapse;
+  border: 2px solid #2b2d78;
+  color: #000;
+  font-size: 0.9rem;
+  line-height: 1.05;
+  table-layout: fixed;
+}
+
+.worker-table th,
+.worker-table td {
+  border: 1px solid #2b2d78;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.worker-table thead th {
+  padding: 0.45rem 0.35rem;
+  background-color: #2b2d78;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.worker-table .col-cote {
+  width: 8.5rem;
+}
+
+.worker-table .col-title {
+  width: 25rem;
+}
+
+.worker-table .col-status {
+  width: 6.8rem;
+}
+
+.worker-table .col-date {
+  width: 12rem;
+}
+
+.worker-table .col-prec {
+  width: 9rem;
+}
+
+.worker-table .col-action {
+  width: 8.7rem;
+}
+
+.worker-table .sortable {
+  cursor: pointer;
+}
+
+.worker-table .sortable:hover {
+  background-color: #30338b;
+}
+
+.worker-table .filter-row th {
+  padding: 0.22rem 0.3rem;
+  background-color: #2b2d78;
+}
+
+.worker-table .filter-cell,
+.worker-table .status-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+}
+
+.worker-table .filter-cell input {
+  width: 100%;
+  height: 1.25rem;
+  border: 1px solid #98a7b3;
+  border-radius: 4px;
+  background-color: #f7fbff;
+  font-size: 0.78rem;
+}
+
+.worker-table .filter-cell button,
+.worker-table .status-filter button {
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: 1px solid #b67a00;
+  border-radius: 3px;
+  background-color: #ffa500;
+  color: #000;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.worker-table .status-filter span {
+  color: #fff;
+  font-weight: 800;
+}
+
+.worker-table .status-filter button.active {
+  background-color: #fff;
+  color: #2b2d78;
+}
+
+.worker-table tbody td {
+  padding: 0.55rem 0.35rem;
+}
+
+.worker-table tbody tr:nth-child(odd) {
+  background-color: #d7e5f0;
+}
+
+.worker-table tbody tr:nth-child(even) {
+  background-color: #edfafa;
+}
+
+.worker-table .title-cell {
+  text-align: left;
+}
+
+.worker-table .status-cell {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.worker-table .btn-finish {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #8a4f00;
+  border-radius: 2px;
+  background-color: #ffa500;
+  color: #8a4f00;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.worker-table .btn-finish:hover {
+  background-color: #ffb321;
+}
+
+.worker-table .btn-finish:disabled {
+  border-color: #777;
+  background-color: #d6d6d6;
+  color: #444;
+  cursor: not-allowed;
+}
+
+.worker-table .done-label {
+  font-weight: 700;
+}
+
+.worker-texts-view .loading-message,
+.worker-texts-view .no-data {
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 800;
+}

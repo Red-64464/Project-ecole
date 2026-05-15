@@ -1,0 +1,155 @@
+/* Ce fichier donne le style du tableau des textes du repartiteur.
+   Il gere l'affichage, les bordures, les couleurs et le scroll du tableau.
+   Il est separe pour garder TextsTable.vue plus court. */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.texts-table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+  border: 2px solid #2b2d78;
+  color: #000;
+  font-size: 1.08rem;
+  line-height: 1.02;
+  table-layout: fixed;
+}
+
+.texts-table th,
+.texts-table td {
+  border: 1px solid #2b2d78;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.texts-table thead th {
+  padding: 0.65rem 0.4rem;
+  background-color: #2b2d78;
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.texts-table .col-cote {
+  width: 9%;
+}
+
+.texts-table .col-title {
+  width: 18%;
+}
+
+.texts-table .col-prec {
+  width: 11%;
+}
+
+.texts-table .col-date {
+  width: 10%;
+}
+
+.texts-table .col-person {
+  width: 12%;
+}
+
+.texts-table .col-status {
+  width: 7%;
+}
+
+.texts-table .sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.texts-table .sortable:hover {
+  background-color: #30338b;
+}
+
+.texts-table .filter-row th {
+  padding: 0.25rem 0.35rem;
+  background-color: #2b2d78;
+}
+
+.texts-table .filter-cell,
+.texts-table .status-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.texts-table .filter-cell input {
+  width: 100%;
+  height: 1.7rem;
+  border: 1px solid #98a7b3;
+  border-radius: 5px;
+  background-color: #f7fbff;
+  font-size: 0.9rem;
+}
+
+.texts-table .filter-cell button,
+.texts-table .status-filter button {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.18rem;
+  border: 1px solid #b67a00;
+  border-radius: 4px;
+  background-color: #ffa500;
+  color: #000;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.texts-table .status-filter span {
+  color: #fff;
+  font-weight: 800;
+}
+
+.texts-table .status-filter button.active {
+  background-color: #fff;
+  color: #2b2d78;
+}
+
+.texts-table tbody td {
+  padding: 0.72rem 0.45rem;
+}
+
+.texts-table tbody tr:nth-child(odd) {
+  background-color: #d7e5f0;
+}
+
+.texts-table tbody tr:nth-child(even) {
+  background-color: #edfafa;
+}
+
+.texts-table .clickable-row {
+  cursor: pointer;
+}
+
+.texts-table .clickable-row:hover {
+  background-color: #c8d9e5;
+}
+
+.texts-table .title-cell {
+  text-align: left;
+  word-break: normal;
+}
+
+.texts-table .status-cell {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.texts-table .no-data {
+  padding: 1rem;
+  background-color: #edfafa;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .texts-table {
+    font-size: 0.9rem;
+  }
+}

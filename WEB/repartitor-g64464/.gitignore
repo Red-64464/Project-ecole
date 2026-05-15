@@ -1,0 +1,28 @@
+# Ce fichier dit a Git ce qu'il doit ignorer.
+# Exemple : node_modules, dist et .env ne doivent pas etre envoyes.
+
+# Dependances
+node_modules/
+dist/
+
+# Fichiers d'environnement
+
+.env.local
+.env.*.local
+
+# Cache
+.eslintcache
+
+# Logs
+npm-debug.log*
+*.log
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

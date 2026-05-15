@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "prettier.enable": false,
+  "eslint.format.enable": false,
+  "[vue]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": null
+  },
+  "[javascript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": null
+  }
+}
