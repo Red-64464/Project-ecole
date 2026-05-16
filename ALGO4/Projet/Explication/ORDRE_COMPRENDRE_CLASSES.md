@@ -71,7 +71,7 @@ Tu peux lire ces fichiers en surface. Le but est de comprendre l'interface, pas 
 |---:|---|---|
 | 1 | Chargement des poids | Lire `weights.json` |
 | 2 | `evaluation_function` | Donner une note a une position |
-| 3 | `getAction` | Choisir l'action finale |
+| 3 | `get_action` | Choisir l'action finale |
 | 4 | Partie Alpha-Beta | Tester les futurs coups plus vite |
 | 5 | Anti-Stop | Eviter de rester immobile sans raison |
 
