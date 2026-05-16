@@ -10,7 +10,7 @@ from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable,
-    PageBreak, KeepTogether,
+    PageBreak, KeepTogether, Image,
 )
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
 
@@ -148,8 +148,8 @@ def build_story(s):
         "par renforcement &agrave; &eacute;valuer les positions du jeu, puis d&rsquo;utiliser cet "
         "apprentissage dans un arbre Minimax avec &eacute;lagage Alpha-Beta. "
         "J&rsquo;ai choisi de mod&eacute;liser la fonction d&rsquo;&eacute;valuation sous forme affine, "
-        "comme impos&eacute; dans le sujet : <b>f(s) = a&#x2081;x&#x2081;(s) + &hellip; + a&#x2087;x&#x2087;(s) + C</b>. "
-        "L&rsquo;entrainement ajuste les sept coefficients <i>a&#x1D62;</i> par diff&eacute;rence temporelle, "
+        "comme impos&eacute; dans le sujet : <b>f(s) = a<sub>1</sub>x<sub>1</sub>(s) + &hellip; + a<sub>7</sub>x<sub>7</sub>(s) + C</b>. "
+        "L&rsquo;entrainement ajuste les sept coefficients <i>a<sub>i</sub></i> par diff&eacute;rence temporelle, "
         "sans m&eacute;moriser de politique directe.", s["body"]))
 
     # ── 2. Conformite ─────────────────────────────────────────────────────────
@@ -157,9 +157,9 @@ def build_story(s):
     section_rule(story)
 
     conf_rows = [
-        ["Facteurs Pac-Man x&#x1D62;(s)",        "7 facteurs dans features.py : nourriture, fant&ocirc;mes, capsules, score.", "OK"],
+        ["Facteurs Pac-Man x<sub>i</sub>(s)",        "7 facteurs dans features.py : nourriture, fant&ocirc;mes, capsules, score.", "OK"],
         ["Recherche dans les facteurs",            "BFS utilis&eacute; pour les distances r&eacute;elles dans le labyrinthe.",   "OK"],
-        ["Fonction affine &sum; a&#x1D62;x&#x1D62; + C", "Impl&eacute;ment&eacute;e dans rlMinimaxAgents.py, ligne 115.",    "OK"],
+        ["Fonction affine &sum; a<sub>i</sub>x<sub>i</sub> + C", "Impl&eacute;ment&eacute;e dans rlMinimaxAgents.py, ligne 115.",    "OK"],
         ["Minimax avec &eacute;lagage Alpha-Beta", "RLMinimaxAgent explore les coups avec coupures &alpha;/&beta;.",             "OK"],
         ["Poids appris par renforcement",          "train.py ajuste les poids par mise &agrave; jour TD.",                       "OK"],
         ["Comparaison statistique",                "compare.py compare Minimax, AlphaBeta et RLMinimax sur 10 layouts.",         "OK"],
@@ -206,19 +206,19 @@ def build_story(s):
         "pas fix&eacute;s &agrave; la main.", s["body"]))
 
     feat_rows = [
-        ["x&#x2081;", "nearest_food_bfs",              "+0.6891", "Nourriture la plus proche (BFS)",        "Encourage Pac-Man &agrave; avancer vers la nourriture."],
-        ["x&#x2082;", "ghosts_within_3",               "&minus;1.4093", "Nb de fant&ocirc;mes dans 3 cases","P&eacute;nalise les situations d&rsquo;urgence imm&eacute;diate."],
-        ["x&#x2083;", "scared_ghosts_nearby",          "+1.4061", "Fant&ocirc;mes effray&eacute;s proches", "Valorise les occasions de manger un fant&ocirc;me."],
-        ["x&#x2084;", "remaining_food",                "+0.4036", "Nourriture restante (n&eacute;gative)",  "Encourage Pac-Man &agrave; terminer la carte."],
-        ["x&#x2085;", "nearest_capsule_bfs",           "+0.0252", "Capsule la plus proche (BFS)",           "Effet faible : capsules peu utiles sur les cartes d&rsquo;entrainement."],
-        ["x&#x2086;", "current_score",                 "+1.8572", "Score courant / 1000",                   "Ancre l&rsquo;&eacute;valuation au score officiel du jeu."],
-        ["x&#x2087;", "nearest_dangerous_ghost_bfs",   "&minus;1.2624","Fant&ocirc;me dangereux le plus proche","P&eacute;nalise la proximit&eacute; g&eacute;n&eacute;rale du danger."],
+        ["x<sub>1</sub>", "nearest_food_bfs",              "+0.6891", "Nourriture la plus proche (BFS)",        "Encourage Pac-Man &agrave; avancer vers la nourriture."],
+        ["x<sub>2</sub>", "ghosts_within_3",               "&minus;1.4093", "Nb de fant&ocirc;mes dans 3 cases","P&eacute;nalise les situations d&rsquo;urgence imm&eacute;diate."],
+        ["x<sub>3</sub>", "scared_ghosts_nearby",          "+1.4061", "Fant&ocirc;mes effray&eacute;s proches", "Valorise les occasions de manger un fant&ocirc;me."],
+        ["x<sub>4</sub>", "remaining_food",                "+0.4036", "Nourriture restante (n&eacute;gative)",  "Encourage Pac-Man &agrave; terminer la carte."],
+        ["x<sub>5</sub>", "nearest_capsule_bfs",           "+0.0252", "Capsule la plus proche (BFS)",           "Effet faible : capsules peu utiles sur les cartes d&rsquo;entrainement."],
+        ["x<sub>6</sub>", "current_score",                 "+1.8572", "Score courant / 1000",                   "Ancre l&rsquo;&eacute;valuation au score officiel du jeu."],
+        ["x<sub>7</sub>", "nearest_dangerous_ghost_bfs",   "&minus;1.2624","Fant&ocirc;me dangereux le plus proche","P&eacute;nalise la proximit&eacute; g&eacute;n&eacute;rale du danger."],
         ["C",         "bias",                          "&minus;0.0834", "Biais constant",                   "Correction globale ind&eacute;pendante de l&rsquo;&eacute;tat."],
     ]
     ok_table(
-        ["Fact.", "Feature", "Poids appris", "Information", "R&ocirc;le"],
+        ["Code", "Feature", "Poids appris", "Information", "R&ocirc;le"],
         feat_rows,
-        [0.9*cm, 4.2*cm, 2.2*cm, 4.0*cm, 5.8*cm],
+        [1.3*cm, 4.0*cm, 2.2*cm, 4.0*cm, 5.6*cm],
         story, s
     )
     story.append(Spacer(1, 0.3*cm))
@@ -241,7 +241,7 @@ def build_story(s):
                        alignment=TA_CENTER, spaceAfter=8, spaceBefore=4)))
     story.append(Paragraph(
         "Chaque poids est ensuite ajust&eacute; proportionnellement &agrave; "
-        "<i>erreur &times; x&#x1D62;(s)</i>. "
+        "<i>erreur &times; x<sub>i</sub>(s)</i>. "
         "Je limite le gradient entre &minus;5 et +5 pour &eacute;viter les divergences, "
         "et je d&eacute;crois le taux d&rsquo;apprentissage &alpha; au fil des parties. "
         "Un signal terminal de +500 (victoire) ou &minus;500 (d&eacute;faite) ancre les "
@@ -260,7 +260,7 @@ def build_story(s):
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph(
         "L&rsquo;agent ne m&eacute;morise pas d&rsquo;actions : il apprend uniquement les coefficients "
-        "a&#x1D62;. C&rsquo;est Alpha-Beta qui prend la d&eacute;cision finale &agrave; chaque tour, "
+        "a<sub>i</sub>. C&rsquo;est Alpha-Beta qui prend la d&eacute;cision finale &agrave; chaque tour, "
         "en utilisant la fonction affine avec les poids appris.", s["small"]))
 
     # ── 5. Resultats ──────────────────────────────────────────────────────────
@@ -296,6 +296,28 @@ def build_story(s):
         "Ce cas montre que l&rsquo;&eacute;valuation apprise guide Pac-Man de fa&ccedil;on bien plus efficace.", s["small"]))
     story.append(Spacer(1, 0.3*cm))
 
+    # ── Graphique de synthese ───────────────────────────────────────────────
+    story.append(PageBreak())
+    story.append(Paragraph("Visualisation des r&eacute;sultats", s["h2"]))
+    story.append(Paragraph(
+        "Pour rendre la comparaison plus lisible, j&rsquo;ai g&eacute;n&eacute;r&eacute; trois graphiques "
+        "&agrave; partir de la table pr&eacute;c&eacute;dente. Le premier compare les scores moyens des "
+        "trois agents. Le deuxi&egrave;me montre le taux de victoire de RLMinimax. "
+        "Le troisi&egrave;me montre que mon agent gagne en score moyen sur chacun des 10 layouts.",
+        s["body"]))
+    story.append(Spacer(1, 0.2*cm))
+    try:
+        img = Image("output/synthese_comparaison.png", width=17*cm, height=17*cm)
+        img.hAlign = "CENTER"
+        story.append(img)
+        story.append(Paragraph(
+            "Figure : synth&egrave;se de la comparaison sur 10 layouts "
+            "(g&eacute;n&eacute;r&eacute;e par plot_comparison.py).",
+            s["caption"]))
+    except Exception as e:
+        story.append(Paragraph(f"[graphique non disponible : {e}]", s["small"]))
+    story.append(Spacer(1, 0.3*cm))
+
     # Analyse
     story.append(Paragraph("Analyse de mes r&eacute;sultats", s["h2"]))
     bullets = [
@@ -312,17 +334,16 @@ def build_story(s):
     story.append(Spacer(1, 0.3*cm))
 
     # ── 6. Fichiers ───────────────────────────────────────────────────────────
-    story.append(PageBreak())
     story.append(Paragraph("6. Fichiers principaux du projet", s["h1"]))
     section_rule(story)
 
     file_rows = [
-        ["features.py",         "D&eacute;finit les 7 features x&#x1D62;(s) utilis&eacute;es dans f(s)."],
+        ["features.py",         "D&eacute;finit les 7 features x<sub>i</sub>(s) utilis&eacute;es dans f(s)."],
         ["rlMinimaxAgents.py",  "Agent final : Alpha-Beta + &eacute;valuation affine avec poids appris."],
         ["train.py",            "Entrainement TD des poids. Sauvegarde les meilleurs dans weights.json."],
         ["compare.py",          "Lance Minimax, AlphaBeta et RLMinimax et compare les statistiques."],
         ["weights.json",        "7 poids + 1 biais appris. Charg&eacute;s automatiquement par RLMinimaxAgent."],
-        ["plot_convergence.py", "G&eacute;n&egrave;re un graphique montrant l&rsquo;&eacute;volution des poids pendant l&rsquo;entrainement."],
+        ["plot_comparison.py",  "G&eacute;n&egrave;re les graphiques de comparaison sur les 10 layouts."],
         ["multiAgents.py",      "Minimax, AlphaBeta, ReflexAgent (avec BFS), betterEvaluationFunction."],
         ["README.md",           "Pr&eacute;sentation du projet et commandes de lancement."],
     ]
@@ -341,7 +362,7 @@ def build_story(s):
         ["Diff&eacute;rence de score positive pour RLMinimax (tous layouts)", "OK"],
         ["Stop moyen de RLMinimax",                                  "0.0"],
         ["RLMinimax gagne &agrave; profondeur &eacute;gale vs Minimax et AlphaBeta", "OK"],
-        ["Graphique de convergence des poids g&eacute;n&eacute;r&eacute;", "OK (plot_convergence.py)"],
+        ["Graphiques de comparaison g&eacute;n&eacute;r&eacute;s",         "OK (plot_comparison.py)"],
     ]
     v_data = []
     for check, result in verif_rows:
@@ -376,7 +397,7 @@ def build_story(s):
         "Le mod&egrave;le affine ne peut pas capturer les interactions entre features. "
         "Par exemple, &laquo; fant&ocirc;me proche ET capsule disponible &raquo; devrait &ecirc;tre "
         "moins dangereux, mais ma formule additionne simplement les deux termes.",
-        "Le poids de x&#x2085; (capsule) est tr&egrave;s faible (+0.025) car les capsules "
+        "Le poids de x<sub>5</sub> (capsule) est tr&egrave;s faible (+0.025) car les capsules "
         "&eacute;taient peu utiles sur les cartes d&rsquo;entrainement. "
         "Sur <i>capsuleClassic</i>, le winrate reste bas pour cette raison.",
         "J&rsquo;aurais pu ajouter une feature d&eacute;tectant les culs-de-sac ou "
