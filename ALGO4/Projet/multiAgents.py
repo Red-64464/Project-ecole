@@ -9,6 +9,7 @@ import random
 import util
 
 from game import Agent
+from features import _bfs_distance
 
 
 class ReflexAgent(Agent):
@@ -25,25 +26,28 @@ class ReflexAgent(Agent):
     def evaluation_function(self, current_game_state, action):
         """Evalue l'etat obtenu apres une action reflexe.
 
-        Cette evaluation utilise surtout le score, la nourriture proche, les
-        fantomes et les capsules. Elle sert de rappel du premier labo.
+        Utilise BFS pour les distances reelles (respecte les murs).
         """
         successor = current_game_state.generatePacmanSuccessor(action)
         new_pos = successor.getPacmanPosition()
         new_food = successor.getFood().asList()
         ghost_states = successor.getGhostStates()
+        walls = successor.getWalls()
         score = successor.getScore()
 
         if action == "Stop":
             score -= 10
 
         if new_food:
-            nearest_food = min(util.manhattan_distance(new_pos, food) for food in new_food)
+            # BFS : distance reelle vers la nourriture la plus proche
+            nearest_food = _bfs_distance(new_pos, set(new_food), walls) or 0
             score += 10.0 / (1.0 + nearest_food)
             score -= 4.0 * len(new_food)
 
         for ghost_state in ghost_states:
-            distance = util.manhattan_distance(new_pos, ghost_state.getPosition())
+            ghost_pos = (int(ghost_state.getPosition()[0]), int(ghost_state.getPosition()[1]))
+            # BFS : distance reelle vers ce fantome (contourne les murs)
+            distance = _bfs_distance(new_pos, {ghost_pos}, walls) or 999
             if ghost_state.scaredTimer > 0:
                 score += 20.0 / (1.0 + distance)
             elif distance <= 1:
@@ -198,7 +202,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
 
 def betterEvaluationFunction(currentGameState):
-    """Evaluation manuelle du labo, gardee comme reference."""
+    """Evaluation manuelle du labo, gardee comme reference.
+
+    Utilise BFS pour des distances reelles dans le labyrinthe.
+    """
     if currentGameState.isWin():
         return float("inf")
     if currentGameState.isLose():
@@ -206,14 +213,16 @@ def betterEvaluationFunction(currentGameState):
 
     pacman_pos = currentGameState.getPacmanPosition()
     food = currentGameState.getFood().asList()
+    walls = currentGameState.getWalls()
     score = currentGameState.getScore() - 4.0 * len(food)
 
     if food:
-        nearest_food = min(util.manhattan_distance(pacman_pos, dot) for dot in food)
+        nearest_food = _bfs_distance(pacman_pos, set(food), walls) or 0
         score += 10.0 / (1.0 + nearest_food)
 
     for ghost_state in currentGameState.getGhostStates():
-        distance = util.manhattan_distance(pacman_pos, ghost_state.getPosition())
+        ghost_pos = (int(ghost_state.getPosition()[0]), int(ghost_state.getPosition()[1]))
+        distance = _bfs_distance(pacman_pos, {ghost_pos}, walls) or 999
         if ghost_state.scaredTimer > 0:
             score += 20.0 / (1.0 + distance)
         elif distance <= 1:
@@ -224,7 +233,7 @@ def betterEvaluationFunction(currentGameState):
     capsules = currentGameState.getCapsules()
     score -= 20.0 * len(capsules)
     if capsules:
-        nearest_capsule = min(util.manhattan_distance(pacman_pos, cap) for cap in capsules)
+        nearest_capsule = _bfs_distance(pacman_pos, set(capsules), walls) or 0
         score += 8.0 / (1.0 + nearest_capsule)
 
     return score
