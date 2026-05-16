@@ -1,12 +1,16 @@
-# Le CMakeList il sert a configurer le projet, a dire ou sont les fichiers sources, les bibliotheques, etc. 
+# CMake configuration for the drum machine project.
+# Declares sources, include paths and platform-specific link options.
 
 cmake_minimum_required(VERSION 3.20)
 
 project(beatbox_64464)
 
-set(CMAKE_CXX_STANDARD 20) # On utilise le C++20 pour les features modernes
+set(CMAKE_CXX_STANDARD 20)          # Use C++20 for modern features.
+set(CMAKE_CXX_STANDARD_REQUIRED ON) # Fail if the compiler does not support it.
+set(CMAKE_CXX_EXTENSIONS OFF)       # Disable compiler-specific extensions.
 
-include_directories( # On dis de chercher les fichiers .h dans ces dossiers
+# Header search paths.
+include_directories(
     "src"
     "libraries/imgui/backends"
     "libraries/imgui"
@@ -14,7 +18,8 @@ include_directories( # On dis de chercher les fichiers .h dans ces dossiers
     "libraries/sdl/include"
 )
 
-add_executable(beatbox_64464 # Prends touts les fichiers . cpp pour les compiler
+# Every source file compiled into the final executable.
+add_executable(beatbox_64464
     main.cpp
     src/ui/MainWindow.cpp
     src/ui/MainWindowDraw.cpp
@@ -24,7 +29,6 @@ add_executable(beatbox_64464 # Prends touts les fichiers . cpp pour les compiler
     src/core/Preferences.cpp
     src/audio/AudioEngine.cpp
     src/audio/AudioFileReader.cpp
-    src/audio/AudioGenerator.cpp
     src/audio/AudioPlayer.cpp
     src/audio/Delay.cpp
     src/audio/Mixer.cpp
@@ -39,9 +43,8 @@ add_executable(beatbox_64464 # Prends touts les fichiers . cpp pour les compiler
 )
 
 if (APPLE)
-# Quand le programme tourne on lui dis ou chercher SDL3.framework, et les autres bibliotheques necessaires pour le son
+    # Tell the executable where to find SDL3.framework at runtime.
     set(CMAKE_INSTALL_RPATH "@executable_path/../libraries/sdl/lib/macos/SDL3.framework")
-    # On va lier le projet avec les bibliotheques SDL3, AudioToolbox, CoreAudio, Carbon et PortAudio. Les chemins sont differents selon le systeme d'exploitation
     target_link_libraries(beatbox_64464 PRIVATE
         "${CMAKE_SOURCE_DIR}/libraries/sdl/lib/macos/SDL3.framework"
         "-framework AudioToolbox"
@@ -50,12 +53,14 @@ if (APPLE)
         "${CMAKE_SOURCE_DIR}/libraries/portaudio/lib/macos/libportaudio.a"
     )
 elseif (WIN32)
+    # MinGW (used by run.bat through MSYS2) can link directly against
+    # DLLs, so we keep that approach here.
     target_link_libraries(beatbox_64464 PRIVATE
         "${CMAKE_SOURCE_DIR}/libraries/sdl/lib/win32/sdl3.dll"
         "${CMAKE_SOURCE_DIR}/libraries/portaudio/lib/win32/portaudio_x64.dll"
     )
-    # Sur Mac , les bibliothèques sont intégrées dans le programme 
-    # Sur Windows , on doit copier les fichiers .dll dans le dossier de sortie pour que le programme puisse les trouver quand il s'exécute. Ces commandes font ça après la compilation du projet.
+
+    # Copy the DLLs next to the executable so they can be loaded at runtime.
     add_custom_command(TARGET beatbox_64464 POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/libraries/sdl/lib/win32/sdl3.dll"

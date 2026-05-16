@@ -1,53 +1,66 @@
 /**
- * @brief Lecteur audio pour une piste de la drum machine.
+ * @brief Audio player for one drum machine track.
  *
- * Gère le chargement d'un fichier WAV, le démarrage de la lecture et la
- * production audio échantillon par échantillon en stéréo float 44100 Hz.
+ * Loads a WAV file, starts playback on demand and fills the audio buffer
+ * sample by sample in interleaved float stereo at 44100 Hz.
  */
 
 #ifndef AUDIO_PLAYER_H
 #define AUDIO_PLAYER_H
 
-#include <vector>       // Pour stocker les données audio dans un tableau dynamique
-#include <string>       // Pour les chemins de fichiers
-#include <string_view>  // Pour string_view : lire une string SANS la copier (plus rapide)
-#include <mutex>        // Pour protéger l'accès aux données entre threads
+#include <vector>      // Holds the loaded audio samples.
+#include <string_view> // Pass a string without copying it.
+#include <mutex>       // Guards the buffer when the file is being replaced.
 
 class AudioPlayer {
 public:
-    // Charge un fichier WAV depuis le chemin donné et le convertit en
-    // format stéréo float 44100 Hz. Renvoie true si ça a marché.
-    // std::string_view = on reçoit le texte SANS le copier (juste un "regard" sur lui)
+    /**
+     * @brief Load a WAV file from disk into the player.
+     *
+     * The file is converted to interleaved float stereo at 44100 Hz.
+     *
+     * @param path Path to the WAV file.
+     * @return true on success.
+     */
     bool loadFile(std::string_view path);
 
-    // Démarre la lecture du son.
-    // Si reversePlay est true, le son sera joué à l'envers.
+    /**
+     * @brief Start playing the loaded sound from the beginning.
+     *
+     * Uses try_lock so the audio thread is never blocked: if the buffer
+     * is currently being swapped, this call simply does nothing.
+     *
+     * @param reversePlay true to play the sound backwards.
+     */
     void start(bool reversePlay);
 
-    // Remplit le buffer "output" avec les données audio de cette piste.
-    // - output : le tableau à remplir avec le son
-    // - frames : le nombre d'échantillons à produire
-    // - volume : le volume de la piste (0.0 à 1.0)
-    // - muted : true = la piste est muette (on met du silence)
+    /**
+     * @brief Fill the output buffer with the next chunk of audio.
+     *
+     * Called by AudioEngine on the audio thread for each callback.
+     *
+     * @param output  Output buffer to fill (interleaved stereo).
+     * @param frames  Number of frames to produce (typically 256).
+     * @param volume  Track volume from 0.0 (silent) to 1.0 (max).
+     * @param muted   true to write silence regardless of the buffer.
+     */
     void process(float* output, int frames, float volume, bool muted);
 
 private:
-    // Le tableau qui contient toutes les données audio du fichier WAV,
-    // en format stéréo (gauche, droite, gauche, droite...)
+    /// Interleaved stereo samples loaded from the WAV file (L, R, L, R, ...).
     std::vector<float> buffer;
 
-    // La position actuelle de lecture dans le buffer (quel échantillon on lit)
+    /// Current read position in the buffer, expressed in frames.
     int position{0};
 
-    // Est-ce que le son est en train d'être joué ?
+    /// true while the loaded sound is still playing.
     bool playing{false};
 
-    // Est-ce que le son est joué à l'envers ?
+    /// true if the sample is being played backwards.
     bool reverse{false};
 
-    // Un "mutex" (verrou) qui protège le buffer quand on charge un fichier.
-    // Cela empêche le thread audio de lire le buffer pendant qu'on est
-    // en train de le remplir avec un nouveau fichier.
+    /// Mutex that guards `buffer` against concurrent reads (audio thread)
+    /// and writes (loadFile on the main thread).
     std::mutex bufferMutex;
 };
 

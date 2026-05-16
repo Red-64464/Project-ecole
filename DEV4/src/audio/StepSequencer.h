@@ -1,121 +1,86 @@
 /**
- * @brief Le séquenceur pas-à-pas (step sequencer) — le "chef d'orchestre" de la drum machine.
+ * @brief Step sequencer — the rhythmic conductor of the drum machine.
  *
- * Son rôle est de savoir QUAND déclencher chaque son en fonction du tempo.
+ * Decides WHEN to trigger each sound based on the tempo.
  *
- * Comment ça marche ?
- *   - Le séquenceur a 16 "pas" (steps) qui défilent en boucle.
- *   - À chaque pas, il regarde dans la grille quelles pistes sont activées.
- *   - Si une piste est activée à ce pas, il déclenche le son correspondant.
- *   - La vitesse de défilement dépend du BPM (battements par minute).
- *
- * @note Imagine un métronome qui avance sur 16 cases. À chaque case, il regarde
- *       "est-ce que je dois jouer un son ici ?" et si oui, il le joue.
+ * How it works:
+ *   - The sequencer has 16 steps that cycle endlessly.
+ *   - For each step, it checks which tracks are enabled.
+ *   - If a track is enabled on the current step, the sound is triggered.
+ *   - The cycling speed depends on the BPM (beats per minute).
  */
 
 #ifndef STEP_SEQUENCER_H
 #define STEP_SEQUENCER_H
 
-#include <atomic>  // Pour les variables partagées entre threads
+#include <atomic>            // Atomic flags shared between threads.
+#include "core/Constants.h"  // NUM_TRACKS
 
-// Déclarations anticipées (forward declarations) 
-// On les écrit ici pour que en gros on puisse utiliser les types DrumMachine et AudioPlayer dans les méthodes de StepSequencer sans inclure leurs fichiers d'en-tête ici, ce qui évite des inclusions circulaires et accélère la compilation.
-// "Ces types existent quelque part, fais-moi confiance. Tu verras leur contenu plus tard."
+// Forward declarations to avoid pulling extra headers here.
 struct DrumMachine;
 class AudioPlayer;
 
 /**
- * @brief Séquenceur pas-à-pas qui gère le timing et le déclenchement des sons.
+ * @brief Step sequencer driving timing and sound triggering.
  *
- * Cette classe est le cœur rythmique de la drum machine. Elle est alimentée
- * par le thread audio (~172 fois/seconde) via process(), et contrôlée par
- * l'interface utilisateur via start() et stop().
+ * Fed by the audio thread (~172 times per second) through process(),
+ * controlled by the UI thread through start() and stop().
  */
-
 class StepSequencer {
-
 public:
     /**
-     * @brief Traite un buffer audio : vérifie s'il faut avancer d'un pas
-     *        et déclenche les sons si nécessaire.
+     * @brief Process one audio buffer: maybe advance the step,
+     *        and trigger sounds when needed.
      *
-     * C'est le cœur du séquenceur. Cette méthode est appelée à chaque cycle
-     * audio, soit environ 172 fois par seconde (44100 / 256).
-     * Elle accumule le temps écoulé et avance d'un pas dès que la durée
-     * d'un pas est atteinte (STEP_DURATION = 0.25 battement).
+     * Called for every audio callback (~172 times per second at 44100 / 256).
+     * Accumulates the elapsed time and advances by one step whenever the
+     * step duration (STEP_DURATION = 0.25 beat) is reached.
      *
-     * @param dm      Pointeur vers la drum machine (grille, BPM, état de lecture...).
-     * @param players Tableau des 4 lecteurs audio, un par piste.
+     * @param drumMachine Pointer to the shared drum machine state.
+     * @param players     Array of the 4 audio players, one per track.
      */
-    void process(DrumMachine* dm, AudioPlayer players[4]);
-    
-    /**
-     * @brief Démarre la lecture du séquenceur (appelé quand on clique "Play").
-     *
-     * Remet le curseur au pas 0, met playing à true, et lève le drapeau
-     * startRequested pour que le thread audio prépare le premier battement.
-     * On a startRequested pour que quand le thread UI démarre il puisse prévenir le thread audio via une variable booléènne
-     * @param dm Pointeur vers la drum machine dont on démarre la lecture.
-     */
-    void start(DrumMachine* dm);
+    void process(DrumMachine* drumMachine, AudioPlayer players[NUM_TRACKS]);
 
     /**
-     * @brief Arrête la lecture du séquenceur (appelé quand on clique "Stop").
+     * @brief Start playback (called when the UI clicks Play).
      *
-     * Met playing à false, remet le curseur au pas 0, et lève le drapeau
-     * stopRequested pour que le thread audio remette ses compteurs à zéro.
-     *
-     * @param dm Pointeur vers la drum machine dont on arrête la lecture.
+     * Resets the cursor to step 0, sets playing to true and raises
+     * startRequested so the audio thread can prepare the first beat.
      */
-    void stop(DrumMachine* dm);
+    void start(DrumMachine* drumMachine);
+
+    /**
+     * @brief Stop playback (called when the UI clicks Stop).
+     *
+     * Sets playing to false, resets the cursor to step 0 and raises
+     * stopRequested so the audio thread resets its counters.
+     */
+    void stop(DrumMachine* drumMachine);
 
 private:
-    /**
-     * @brief Drapeau levé par l'UI quand l'utilisateur clique sur Play.
-     *
-     * Utilise std::atomic car il est écrit par le thread UI et lu par le
-     * thread audio. atomic garantit qu'il n'y a pas de conflit entre les deux.
-     */
+    /// Flag raised by the UI when the user clicks Play.
+    /// Atomic because it is written by the UI thread and read by the audio thread.
     std::atomic<bool> startRequested{false};
 
-    
-    /**
-     * @brief Drapeau levé par l'UI quand l'utilisateur clique sur Stop.
-     *
-     * Utilise std::atomic pour la même raison que startRequested :
-     * accès concurrent entre le thread UI (écriture) et le thread audio (lecture).
-     */
+    /// Flag raised by the UI when the user clicks Stop.
+    /// Atomic for the same reason as startRequested.
     std::atomic<bool> stopRequested{false};
 
-    /**
-     * @brief Compteur de temps écoulé en battements depuis le dernier pas.
-     *
-     * C'est comme un seau qui se remplit au fil du temps : à chaque appel de
-     * process(), on y ajoute une petite fraction de battement. Quand il dépasse
-     * STEP_DURATION (0.25), on passe au pas suivant et on lui soustrait 0.25
-     * (sans le remettre à 0, pour ne pas perdre le reste et rester précis).
-     *
-     *Pourquoi remettre a 0 en  gros car si on ne remet pas à 0, on perd la fraction de temps qui dépasse 0.25, ce qui peut faire que le séquenceur dérive légèrement au fil du temps 
-     * (par exemple, si on a 0.26, on joue le pas suivant et on remet à 0.01 au lieu de 0). En gardant cette fraction, on reste plus précis sur le timing.
-     *
-     * @note Pas besoin d'atomic : cette variable n'est utilisée que par le thread audio.
-     */
+    /// Time elapsed (in beats) since the last step transition.
+    ///
+    /// Works like a bucket that fills as time passes: each call to process()
+    /// adds a fraction of a beat. When it crosses STEP_DURATION (0.25), we
+    /// advance one step and subtract 0.25 (without resetting to 0) so the
+    /// remainder is kept and timing stays precise over time.
+    ///
+    /// Audio-thread-only, no atomic needed.
     double beatAccumulator{0.0};
 
-    /**
-     * @brief Signal pour jouer le premier pas immédiatement au démarrage.
-     *
-     * Sans ce flag, après un clic sur Play, il faudrait attendre que
-     * beatAccumulator atteigne 0.25 (~120ms) avant d'entendre le premier son.
-     * Avec ce flag, process() joue le pas 0 dès son premier appel après start(),
-     * sans attendre que le compteur se remplisse.
-     *
-     * Il est true pendant une fraction de seconde seulement : il passe à true
-     * dans start(), et repasse à false dès que process() a joué le premier pas.
-     *
-     * @note Pas besoin d'atomic : uniquement utilisé par le thread audio.
-     */
+    /// Signal asking process() to trigger the first step immediately on Play.
+    ///
+    /// Without this flag the user would have to wait STEP_DURATION (~120 ms)
+    /// before hearing the first sound. Audio-thread-only.
     bool needsFirstBeat{false};
-}; 
+};
 
 #endif // STEP_SEQUENCER_H

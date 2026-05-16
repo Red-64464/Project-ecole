@@ -1,91 +1,82 @@
 /**
- * @brief Le moteur audio principal — chef d'orchestre de tout le son.
+ * @brief The main audio engine — conductor of all the sound.
  *
- * Cette classe fait le lien entre PortAudio (la bibliothèque qui parle aux
- * haut-parleurs) et tous les modules audio du projet (players, séquenceur,
- * delays, mixer).
+ * Bridges PortAudio (the library that talks to the speakers) with every
+ * audio module of the project (players, sequencer, delays, mixer).
  *
- * @note audioCallback() est une fonction spéciale appelée automatiquement
- * par PortAudio environ 172 fois par seconde (44100 / 256) pour demander
- * les prochaines données audio à envoyer aux haut-parleurs.
+ * @note audioCallback() is a special function called automatically by
+ * PortAudio about 172 times per second (44100 / 256) to ask for the
+ * next chunk of audio data to play through the speakers.
  */
 
 #ifndef AUDIO_ENGINE_H
 #define AUDIO_ENGINE_H
 
-#include "portaudio.h"           // Bibliothèque PortAudio pour la sortie audio
-#include "audio/AudioPlayer.h"   // Les lecteurs audio (un par piste)
-#include "audio/StepSequencer.h" // Le séquenceur pas-à-pas
-#include "audio/Delay.h"         // L'effet de delay (écho)
-#include "audio/Mixer.h"         // Le mixeur qui combine les pistes
-#include "core/Constants.h"      // Les constantes (NUM_TRACKS, etc.)
-#include <string_view>           // Pour string_view : lire une string sans la copier
-#include <thread>                // Pour std::thread : lancer un travail dans un thread séparé
+#include "portaudio.h"           // PortAudio library for audio output.
+#include "audio/AudioPlayer.h"   // Per-track audio player.
+#include "audio/StepSequencer.h" // Step sequencer.
+#include "audio/Delay.h"         // Delay (echo) effect.
+#include "audio/Mixer.h"         // Mixer that sums the tracks.
+#include "core/Constants.h"      // NUM_TRACKS and friends.
+#include <string_view>           // Pass a string without copying it.
 
-
-struct DrumMachine; // Déclaration anticipée : on dit que DrumMachine existe sans inclure tout le fichier
+struct DrumMachine; // Forward declaration — full definition not needed here.
 
 class AudioEngine {
 public:
     /**
-     * @brief Initialise PortAudio et démarre le flux audio.
+     * @brief Initialize PortAudio and start the audio stream.
      *
-     * Étapes : initialise PortAudio, récupère l'appareil de sortie par défaut,
-     * ouvre le flux avec audioCallback, puis démarre le flux.
+     * Steps: initialize PortAudio, query the default output device,
+     * open the stream with audioCallback, then start the stream.
      *
-     * @param dm Pointeur vers la DrumMachine pour accéder à toutes les données partagées.
+     * @param drumMachine Pointer to the DrumMachine instance shared with the UI.
      */
-    void init(DrumMachine* dm);
+    void init(DrumMachine* drumMachine);
 
     /**
-     * @brief Arrête le flux audio et libère toutes les ressources PortAudio.
+     * @brief Stop the audio stream and release every PortAudio resource.
      *
-     * Appelle Pa_StopStream(), Pa_CloseStream() puis Pa_Terminate().
-     * Doit être appelé à la fermeture de l'application.
+     * Calls Pa_StopStream(), Pa_CloseStream() then Pa_Terminate().
+     * Must be called when the application is closing.
      */
     void shutdown();
 
     /**
-     * @brief Charge un fichier WAV dans une piste donnée.
+     * @brief Load a WAV file into the requested track.
      *
-     * Le chargement se fait dans un thread séparé pour ne pas bloquer
-     * l'interface graphique si le fichier est volumineux.
+     * Loading happens on the main thread — the WAV files used for drum hits
+     * are short and decode quickly. AudioPlayer guards its buffer with a
+     * mutex so the audio thread is never disturbed during the swap.
      *
-     * @param track Numéro de la piste (0 à NUM_TRACKS-1).
-     * @param path  Chemin du fichier WAV (ex : "C:/sons/kick.wav").
-     * @return      true si le chargement a réussi, false sinon.
+     * @param track Track index (0 to NUM_TRACKS - 1).
+     * @param path  Path to the WAV file.
+     * @return      true on success, false otherwise.
      */
     bool loadFile(int track, std::string_view path);
 
     /**
-     * @brief Bascule entre Play et Stop.
+     * @brief Toggle between Play and Stop.
      *
-     * Si la lecture est en cours - appelle sequencer.stop().
-     * Si la lecture est arrêtée - appelle sequencer.start().
+     * Calls sequencer.stop() if playback is running, sequencer.start() otherwise.
      */
     void togglePlay();
 
 private:
     /**
-     * @brief Callback audio appelé automatiquement par PortAudio (~172 fois/seconde).
+     * @brief Audio callback invoked automatically by PortAudio (~172 times/sec).
      *
-     * C'est le cœur du système audio. À chaque appel, il :
-     *   1. Fait avancer le séquenceur (timing + déclenchement des sons)
-     *   2. Remplit un buffer par piste via les AudioPlayers
-     *   3. Applique l'effet delay sur chaque piste
-     *   4. Mélange les 4 pistes en un seul buffer de sortie via le Mixer
+     * Heart of the audio system. Each call:
+     *   1. advances the step sequencer (timing + triggering)
+     *   2. fills one buffer per track via the AudioPlayers
+     *   3. applies the delay effect on each track
+     *   4. mixes the 4 tracks into a single output buffer
      *
-     * @note Déclarée  static car PortAudio est une bibliothèque C qui ne
-     * comprend pas les méthodes d'objet. L'objet AudioEngine est récupéré
-     * via  userData (passé lors de Pa_OpenStream avec this).
+     * @note Declared static because PortAudio is a C library and cannot call
+     * member functions directly. The AudioEngine instance is retrieved via
+     * the @c userData parameter passed to Pa_OpenStream.
      *
-     * @param input          Données micro entrantes (non utilisé ici).
-     * @param output         Buffer de sortie à remplir pour les haut-parleurs.
-     * @param framesPerBuffer Nombre d'échantillons à produire (256).
-     * @param timeInfo       Informations de timing PortAudio (non utilisé).
-     * @param statusFlags    Flags de statut PortAudio (non utilisé).
-     * @param userData       Pointeur vers l'objet AudioEngine courant.
-     * @return                paContinue pour maintenir le flux actif.
+     * @return paContinue to keep the stream alive.
      */
     static int audioCallback(const void* input, void* output,
                              unsigned long framesPerBuffer,
@@ -93,12 +84,12 @@ private:
                              PaStreamCallbackFlags statusFlags,
                              void* userData);
 
-    PaStream* stream{nullptr};          // Flux audio PortAudio (connexion vers les haut-parleurs)
-    DrumMachine* drumMachine{nullptr};  // Pointeur vers la DrumMachine (données partagées)
-    AudioPlayer players[NUM_TRACKS];    // Un lecteur audio par piste (4 au total)
-    StepSequencer sequencer;            // Séquenceur qui gère le timing et déclenche les sons
-    Delay delays[NUM_TRACKS];           // Un effet delay (écho) par piste (4 au total)
-    Mixer mixer;                        // Mixeur qui combine les 4 pistes en un seul son
+    PaStream* stream{nullptr};         ///< PortAudio stream handle (the link to the speakers).
+    DrumMachine* drumMachine{nullptr}; ///< Shared drum machine state.
+    AudioPlayer players[NUM_TRACKS];   ///< One audio player per track.
+    StepSequencer sequencer;           ///< Timing and triggering of sounds.
+    Delay delays[NUM_TRACKS];          ///< One delay effect per track.
+    Mixer mixer;                       ///< Combines the 4 tracks into one output buffer.
 };
 
 #endif // AUDIO_ENGINE_H

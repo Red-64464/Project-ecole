@@ -1,12 +1,13 @@
 /**
- * @brief Structure centrale qui stocke tout l'état de la drum machine.
+ * @brief Central data structure holding the whole state of the drum machine.
  *
- * Contient la grille du séquenceur, le BPM, les volumes, les fichiers audio
- * et les paramètres d'effets (delay, reverse).
+ * Contains the sequencer grid, the BPM, per-track volumes, loaded files
+ * and effect parameters (delay, reverse).
  *
- * @note Les membres partagés avec le thread audio utilisent @c std::atomic
- * pour éviter les problèmes de lecture/écriture simultanée entre threads donc pour éviter la concurrence entre le thread de l'interface utilisateur et le thread audio.
+ * @note Members shared with the audio thread use @c std::atomic so that
+ * reads and writes between the UI thread and the audio thread never race.
  */
+
 #ifndef DRUM_MACHINE_H
 #define DRUM_MACHINE_H
 
@@ -15,66 +16,61 @@
 #include "Constants.h"
 
 /**
- * @brief Structure principale de la drum machine.
+ * @brief Main drum machine state.
  *
- * Accessible par l'interface graphique et le thread audio.
- * Les membres atomiques sont thread-safe ; les autres sont réservés à l'UI.
+ * Accessed both by the graphical interface and by the audio thread.
+ * Atomic members are thread-safe; the others are UI-only.
  */
-
 struct DrumMachine
 {
-
-    /// Tempo en battements par minute. Par défaut : 120 BPM.
+    /// Tempo in beats per minute. Default: 120 BPM.
     std::atomic<int> bpm{120};
 
-    /// @c true si la lecture est en cours, @c false si arrêtée.
+    /// @c true if playback is running, @c false if stopped.
     std::atomic<bool> playing{false};
 
-    /// Position de lecture actuelle dans le séquenceur (0 à NUM_STEPS-1).
+    /// Current sequencer position (0 to NUM_STEPS - 1).
     std::atomic<int> currentStep{0};
 
-    // Grille du séquenceur : true si la note est activée, false sinon. Dimensions : NUM_TRACKS x NUM_STEPS.
-    // 4 x 16 cases , chaque case représente une note , si la case est à true alors la note est jouée , sinon elle n'est pas jouée
+    /// Sequencer grid: @c true if the step triggers the sound, @c false otherwise.
+    /// Dimensions: NUM_TRACKS x NUM_STEPS = 4 x 16 cells.
     std::atomic<bool> grid[NUM_TRACKS][NUM_STEPS];
 
-    /// Volume de chaque piste. Plage : 0.0 (silence) à 1.0 (max).
+    /// Per-track volume. Range: 0.0 (silent) to 1.0 (max).
     std::atomic<float> volume[NUM_TRACKS];
 
-    /// @c true si la piste est en mute (son coupé).
+    /// @c true if the track is muted (silent output).
     std::atomic<bool> muted[NUM_TRACKS];
 
-    /// @c true si le son de la piste est joué à l'envers.
+    /// @c true if the track is played in reverse.
     std::atomic<bool> reverse[NUM_TRACKS];
 
-    /// @c true si l'effet delay (écho) est activé sur la piste.
+    /// @c true if the delay effect is enabled on this track.
     std::atomic<bool> delayEnabled[NUM_TRACKS];
 
-    /// Durée du delay en secondes. Plage : 0.0 à 1.0.
+    /// Delay duration in seconds. Range: 0.0 to 1.0.
     std::atomic<float> delayTime[NUM_TRACKS];
 
-    /// Niveau du mix de l'écho. Plage : 0.0 (aucun) à 1.0 (fort).
+    /// Delay mix level. Range: 0.0 (no echo) to 1.0 (loud echo).
     std::atomic<float> delayMix[NUM_TRACKS];
 
-    /// Chemin complet du fichier WAV chargé pour chaque piste. Ex : @c "C:/sons/kick.wav"
+    /// Full path of the WAV file loaded for each track.
     std::string filePath[NUM_TRACKS];
 
-    /// Nom du fichier seul (sans chemin), affiché dans l'UI. Ex : @c "kick.wav"
+    /// Filename only (no directory), shown in the UI.
     std::string fileName[NUM_TRACKS];
 
-    /// Index de la piste sélectionnée dans l'interface (0 à NUM_TRACKS-1).
+    /// Index of the track currently selected in the UI (0 to NUM_TRACKS - 1).
     int selectedTrack{0};
 
-    /// Chemin du fichier en attente de chargement (choisi via la boîte de dialogue).
+    /// Path of the file picked through the open dialog, waiting to be loaded.
     std::string pendingFilePath;
 
-    /// @c true quand l'utilisateur a validé le choix d'un fichier.
+    /// @c true when the user has just confirmed a file in the open dialog.
     bool fileDialogComplete{false};
 
-    // Le constructeur : initialise toutes les valeurs par défaut
+    /// Constructor: initializes every field to its default value.
     DrumMachine();
 };
-
-
-
 
 #endif // DRUM_MACHINE_H
