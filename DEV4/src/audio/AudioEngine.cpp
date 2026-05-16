@@ -78,22 +78,13 @@ void AudioEngine::shutdown() {
  * @param path  Chemin vers le fichier WAV.
  * @return true si le chargement a réussi.
  *
- * @note Le chargement se fait dans un thread séparé pour ne pas bloquer
- *       l'interface graphique. join() attend la fin du thread avant de retourner.
+ * @note Pour des samples courts (< 1 sec), le chargement est quasi-instantane.
+ *       AudioPlayer::loadFile utilise un mutex en interne pour ne pas perturber
+ *       le thread audio pendant le remplacement du buffer.
  */
 bool AudioEngine::loadFile(int track, std::string_view path) {
     if (track < 0 || track >= NUM_TRACKS) return false;
-
-    bool success = false;
-
-    // On crée un thread pour charger le fichier sans bloquer l'UI. Le thread modifie la variable "success" pour indiquer si ça a marché.
-    // [&]() { ... } = lambda (fonction anonyme) qui permet d'utiliser les variables locales (comme "success" car elle se trouve dans le fonction ) à l'intérieur du thread. C'est plus simple que de faire une fonction séparée.
-    std::thread loadThread([&]() {
-        success = players[track].loadFile(path);
-    });
-
-    loadThread.join(); // Attend la fin du thread avant de continuer
-    return success;
+    return players[track].loadFile(path);
 }
 
 /**

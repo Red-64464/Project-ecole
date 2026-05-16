@@ -8,6 +8,7 @@
 
 #include "Mixer.h"
 #include "core/Constants.h"  // Pour NUM_CHANNELS
+#include <algorithm>         // Pour std::clamp
 
     /**
      * @brief Melange 4 buffers audio dans un seul  buffer de sortie.
@@ -29,7 +30,10 @@
 
                 for (int i = 0; i < totalSamples; i++)
                 {
-                    output[i] = buf1[i] + buf2[i] + buf3[i] + buf4[i]; // J'additionne toutes les valeurs audio des 4 buffers pour chaque échantillon pour les mettre dans le buffer de sortie. Cela crée un son final qui combine les 4 pistes.
+                    // On additionne les 4 pistes, puis on limite le résultat entre -1.0 et 1.0
+                    // pour éviter la distorsion si plusieurs pistes jouent fort en même temps.
+                    float mixed = buf1[i] + buf2[i] + buf3[i] + buf4[i];
+                    output[i] = std::clamp(mixed, -1.0f, 1.0f);
                 }
                 
                         }

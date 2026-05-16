@@ -4,7 +4,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(beatbox_64464)
 
-set(CMAKE_CXX_STANDARD 20) # On utilise le C++20 pour les features modernes
+set(CMAKE_CXX_STANDARD 20)          # On utilise le C++20 pour les features modernes
+set(CMAKE_CXX_STANDARD_REQUIRED ON) # Erreur si le compilateur ne supporte pas C++20
+set(CMAKE_CXX_EXTENSIONS OFF)       # Desactive les extensions GNU pour rester standard
 
 include_directories( # On dis de chercher les fichiers .h dans ces dossiers
     "src"
@@ -50,12 +52,15 @@ if (APPLE)
         "${CMAKE_SOURCE_DIR}/libraries/portaudio/lib/macos/libportaudio.a"
     )
 elseif (WIN32)
+    # NOTE : on lie directement contre les .dll (approche valide avec MinGW/MSYS2).
+    # run.bat utilise MinGW (gcc de MSYS2) : cette approche fonctionne parfaitement.
     target_link_libraries(beatbox_64464 PRIVATE
         "${CMAKE_SOURCE_DIR}/libraries/sdl/lib/win32/sdl3.dll"
         "${CMAKE_SOURCE_DIR}/libraries/portaudio/lib/win32/portaudio_x64.dll"
     )
-    # Sur Mac , les bibliothèques sont intégrées dans le programme 
-    # Sur Windows , on doit copier les fichiers .dll dans le dossier de sortie pour que le programme puisse les trouver quand il s'exécute. Ces commandes font ça après la compilation du projet.
+    # Sur Windows , on doit copier les fichiers .dll dans le dossier de sortie
+    # pour que le programme puisse les trouver quand il s'execute.
+    # Ces commandes font ca automatiquement apres la compilation.
     add_custom_command(TARGET beatbox_64464 POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/libraries/sdl/lib/win32/sdl3.dll"

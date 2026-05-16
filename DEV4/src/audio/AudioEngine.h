@@ -20,7 +20,6 @@
 #include "audio/Mixer.h"         // Le mixeur qui combine les pistes
 #include "core/Constants.h"      // Les constantes (NUM_TRACKS, etc.)
 #include <string_view>           // Pour string_view : lire une string sans la copier
-#include <thread>                // Pour std::thread : lancer un travail dans un thread séparé
 
 
 struct DrumMachine; // Déclaration anticipée : on dit que DrumMachine existe sans inclure tout le fichier

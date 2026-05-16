@@ -56,14 +56,16 @@
             4 ) On avance ensuite dans le buffer circulaire pour lire le prochain écho et pour écrire le prochain son , on utilise le modulo pour revenir au début du buffer circulaire si on dépasse la fin
             */
 
-            // On lit la valeur du passé dans le buffer circulaire  = c'est l'écho 
+            // On lit la valeur du passé dans le buffer circulaire  = c'est l'écho
             float delayed = circularBuffer[readIndex];
-            // buffer[i] c'est le son original 
-            // delayMix c'est le volume de l'écho et delayed c'est l'ancien son ou est le readIndex 
-            // donc c'est le son actuel + l'ancien son * écho 
-            buffer[i] = buffer[i] + delayMix * delayed; // On ajoute l'écho au son original , delayMix est le volume de l'écho
-
-            circularBuffer[writeIndex] = buffer[i]; // On écrit le son actuel dans le buffer circulaire pour qu'il puisse être utilisé comme écho dans le futur donc pour le stocker dans le circularBuffer a la position writeIndex
+            // On sauvegarde le son original AVANT de le modifier
+            float original = buffer[i];
+            // On ajoute l'écho au son original. delayMix est le volume de l'écho.
+            buffer[i] = original + delayMix * delayed;
+            // IMPORTANT : on stocke le son original (pas le mix) dans le buffer circulaire.
+            // Si on stockait le mix, l'écho ferait écho sur lui-même indéfiniment
+            // et le son satirerait complètement quand delayMix est proche de 1.0.
+            circularBuffer[writeIndex] = original;
 
             readIndex = (readIndex + 1)% DELAY_BUFFER_SIZE; // On avance dans le buffer circulaire pour lire le prochain écho , on utilise le modulo pour revenir au début du buffer circulaire si on dépasse la fin
             writeIndex = (writeIndex + 1)% DELAY_BUFFER_SIZE; // On avance dans le buffer circulaire pour écrire le prochain son , on utilise le modulo pour revenir au début du buffer circulaire si on dépasse la fin
