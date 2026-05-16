@@ -1,47 +1,44 @@
+/**
+ * @brief Delay (echo) effect using a ring buffer.
+ *
+ * Adds a delayed copy of the audio signal to the original signal.
+ * The delayed samples are kept in a circular buffer so we can
+ * read them back after the chosen delay time.
+ */
+
 #ifndef DELAY_H
 #define DELAY_H
 
-#include <vector> // J'import l'include pour vector qui est une lsite dybamique en c++
-#include "core/Constants.h"  // Pour DELAY_BUFFER_SIZE
+#include <vector>
+#include "core/Constants.h"
 
-/**
- * Classe qui applique un effet de delay (echo) au son.
- *
- * Le delay ajoute au son original une copie decalee dans le temps.
- *
- * Cette classe utilise un buffer circulaire pour enregistrer le son
- * puis le relire plus tard afin de creer l'echo.
- */
-
- class Delay{
-
- public:
-     /**
-     * Construit un effet de delay.
+class Delay {
+public:
+    /**
+     * @brief Build the delay effect.
      *
-     * Le buffer circulaire est initialise avec des valeurs a 0.0.
+     * Initializes the circular buffer with zeros.
      */
     Delay();
 
-
     /**
-     * Applique l'effet de delay au son.
+     * @brief Apply the delay effect to the audio buffer.
      *
-     * @param buffer le buffer audio a modifier
-     * @param frames le nombre d'echantillons a traiter dans le buffer en paramètres 
-     * @param delayTime le temps de decalage de l'echo
-     * @param delayMix l'intensite de l'echo
-     * @param enabled indique si l'effet est active ou non 
+     * @param buffer    Audio buffer to modify (interleaved stereo).
+     * @param frames    Number of frames to process.
+     * @param delayTime Delay duration in seconds (0.0 to 1.0).
+     * @param delayMix  Echo amplitude (0.0 = no echo, 1.0 = max).
+     * @param enabled   true to apply the effect, false to leave the audio alone.
      */
-    void  process(float* buffer,int frames , float delayTime , float delayMix , bool enabled);
+    void process(float* buffer, int frames, float delayTime,
+                 float delayMix, bool enabled);
 
- private:
-    // Une liste de float qui va représenter le Buffer circulaire
+private:
+    /// Ring buffer holding the past samples used to produce the echo.
     std::vector<float> circularBuffer;
-    // C'est la position actuelle d'écriture dans le Buffer circulaire 
-    // "Je suis ici, c'est là que je vais écrire le prochain son."
+
+    /// Next index where a sample will be written in @c circularBuffer.
     int writeIndex{0};
+};
 
- };
-
-#endif
+#endif // DELAY_H

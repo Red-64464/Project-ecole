@@ -1,88 +1,55 @@
 /**
- * @brief Declaration de la fenetre principale.
+ * @brief Main window declaration.
  *
- * Cette classe gere la fenetre SDL, l'interface ImGui
- * et le lien avec le moteur audio.
+ * Owns the SDL window, the ImGui context and bridges the UI with
+ * the audio engine.
  */
-
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <SDL3/SDL.h>            // Bibliotheque SDL pour la fenetre et le rendu.
-#include "core/DrumMachine.h"    // Donnees de la drum machine.
-#include "audio/AudioEngine.h"   // Moteur audio.
+#include <SDL3/SDL.h>          // SDL window and renderer types.
+#include "core/DrumMachine.h"  // Shared drum machine state.
+#include "audio/AudioEngine.h" // Audio engine.
 
-/**
- * @brief Fenetre principale de l'application.
- */
 class MainWindow {
 public:
     /**
-     * @brief Initialise la fenetre, ImGui, l'audio et les preferences.
+     * @brief Initialize SDL, ImGui, the audio engine and load preferences.
      */
     void init();
 
     /**
-     * @brief Lance la boucle principale de l'application.
+     * @brief Run the main application loop.
      */
     void run();
 
 private:
-    /**
-     * @brief Dessine toute l'interface.
-     */
+    /// Draw every UI element for the current frame.
     void draw();
 
-    /**
-     * @brief Dessine les controles de lecture (play, pause, stop).
-     */
+    /// Draw the playback controls (Play/Stop + BPM buttons).
     void drawPlaybackControls();
 
-    /**
-     * @brief Dessine la grille du sequenceur. ( 4 pistes x 16 pas )
-     */
+    /// Draw the sequencer grid (4 tracks x 16 steps + volume + mute).
     void drawSequencerGrid();
 
-    /**
-     * @brief Dessine le panneau d'inspection. ( volume, delay, etc. )
-     */
+    /// Draw the inspector panel for the selected track.
     void drawInspector();
 
-    /**
-     * @brief Gere le resultat de la selection d'un fichier WAV.
-     */
+    /// Handle the result of the WAV file dialog when one is pending.
     void handleFileDialogResult();
 
-    /**
-     * @brief Charge les preferences sauvegardees.
-     */
+    /// Load the WAV paths saved in preferences.txt at startup.
     void loadPreferences();
 
-    /**
-     * @brief Ouvre une boite de dialogue pour choisir un fichier WAV.
-     */
+    /// Open the native file dialog to pick a WAV file.
     void openFileDialog();
 
-    /**
-     * @brief Fenetre SDL principale.
-     */
-    SDL_Window* window{nullptr};
-
-    /**
-     * @brief Renderer SDL utilise pour l'affichage.
-     */
-    SDL_Renderer* renderer{nullptr};
-
-    /**
-     * @brief Donnees principales de la drum machine.
-     */
-    DrumMachine drumMachine;
-
-    /**
-     * @brief Moteur audio qui produit le son.
-     */
-    AudioEngine audioEngine;
+    SDL_Window*   window{nullptr};     ///< Main SDL window.
+    SDL_Renderer* renderer{nullptr};   ///< SDL renderer used by ImGui.
+    DrumMachine   drumMachine;         ///< Drum machine state.
+    AudioEngine   audioEngine;         ///< Audio engine producing the sound.
 };
 
 #endif // MAINWINDOW_H

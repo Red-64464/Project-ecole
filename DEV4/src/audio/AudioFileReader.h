@@ -1,31 +1,31 @@
+/**
+ * @brief WAV file loader.
+ *
+ * Loads a .wav file from disk and converts it to a float stereo 44100 Hz
+ * buffer ready to be played by the audio engine.
+ */
+
 #ifndef AUDIO_FILE_READER_H
 #define AUDIO_FILE_READER_H
 
-#include <vector> // std::vector (pour stocker les échantillons audio) c'est une liste
-#include <string_view> // C'est une manière légère de passer des chaînes de caractères (comme std::string mais sans faire de copie)
+#include <vector>      // std::vector to hold the audio samples.
+#include <string_view> // Pass a string without copying it.
 
-/**
- * @brief Lecteur de fichiers WAV.
- *
- * Charge un fichier .wav depuis le disque et le convertit
- * en buffer float stereo 44100 Hz pret a etre joue par le moteur audio.
- *
- */
-
- class AudioFileReader {
-    public:
+class AudioFileReader {
+public:
     /**
-     * @brief  Charge un fichier .wav et le convertit en float stéréo prêt à être joué.
+     * @brief Load a .wav file and convert it to interleaved float stereo.
      *
-     * SDL lit le fichier, le convertit en float stéréo 44100 Hz,
-     * puis copie le résultat dans outBuffer.
+     * SDL reads the file, converts it to float stereo at @p sampleRate Hz,
+     * and the result is copied into @p outBuffer.
      *
-     * @param path        Chemin vers le fichier .wav
-     * @param sampleRate  Vitesse de lecture cible (44100 Hz dans notre projet)
-     * @param outBuffer   Liste de floats remplie avec le son converti (passée par référence)
-     * @return            true si le chargement a réussi, false sinon
+     * @param path        Path to the .wav file.
+     * @param sampleRate  Target sample rate (44100 Hz for this project).
+     * @param outBuffer   Vector of floats filled with the converted audio.
+     * @return            true on success, false otherwise.
      */
-    static bool loadFile(std::string_view path , int sampleRate , std::vector<float>& outBuffer);
- };
- 
-#endif 
+    static bool loadFile(std::string_view path, int sampleRate,
+                         std::vector<float>& outBuffer);
+};
+
+#endif // AUDIO_FILE_READER_H

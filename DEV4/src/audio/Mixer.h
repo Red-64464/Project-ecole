@@ -1,20 +1,24 @@
+/**
+ * @brief Mixer that sums several audio buffers into one output buffer.
+ *
+ * Per the project brief, mixing two sources is simply adding their
+ * samples together. We sum the 4 track buffers into the final output.
+ */
+
 #ifndef MIXER_H
 #define MIXER_H
 
-/**
- * @brief Melange plusieurs buffers audio en un seul buffer de sortie.
- */
 class Mixer {
 public:
     /**
-     * @brief Melange 4 buffers audio dans un seul  buffer de sortie.
+     * @brief Sum the 4 track buffers into the output buffer.
      *
-     * @param output Buffer de sortie.
-     * @param buf1 Buffer  de la piste 1.
-     * @param buf2 Buffer  de la piste 2.
-     * @param buf3 Buffer  de la piste 3.
-     * @param buf4 Buffer  de la piste 4.
-     * @param frames Nombre de frames a traiter , par exemple 256 frames par buffer.
+     * @param output Output buffer to fill.
+     * @param buf1   Buffer for track 1.
+     * @param buf2   Buffer for track 2.
+     * @param buf3   Buffer for track 3.
+     * @param buf4   Buffer for track 4.
+     * @param frames Number of frames to process (typically 256).
      */
     void process(float* output,
                  const float* buf1, const float* buf2,
@@ -22,4 +26,4 @@ public:
                  int frames);
 };
 
-#endif 
+#endif // MIXER_H
