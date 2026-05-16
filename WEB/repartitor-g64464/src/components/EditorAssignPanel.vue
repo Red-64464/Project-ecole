@@ -4,6 +4,9 @@
 <script setup>
 import { ref } from "vue";
 import PersonTable from "@/components/PersonTable.vue";
+import { useNotifications } from "@/composables/useNotifications";
+
+const { notify } = useNotifications();
 
 defineProps({
   editors: { type: Array, required: true },
@@ -23,8 +26,8 @@ const editorColumns = [
 ];
 
 function submit() {
-  if (!selectedEditor.value) { 
-    alert("Veuillez sélectionner un éditeur.");
+  if (!selectedEditor.value) {
+    notify("Veuillez sélectionner un éditeur.", "info");
     return;
   }
   emit("assign", { editor: selectedEditor.value });
