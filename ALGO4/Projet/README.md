@@ -14,7 +14,9 @@ Les fichiers pedagogiques sont ranges dans `Explication/`.
 | `train.py` | Apprend les poids par renforcement |
 | `compare.py` | Compare RLMinimax avec Minimax et AlphaBeta |
 | `weights.json` | Stocke les poids appris |
-| `Rapport Final.pdf` | Rapport final officiel a remettre au professeur (3 pages, complet) |
+| `plot_comparison.py` | Genere les graphiques de comparaison sur les 10 layouts |
+| `generate_rapport.py` | Script source pour regenerer le PDF final |
+| `Rapport Final.pdf` | Rapport final officiel a remettre au professeur |
 | `output/pdf/RAPPORT_FINAL_RLMINIMAX_PROF_FINAL_PRO.pdf` | Version sauvegardee du rapport final |
 | `RAPPORT_POIDS_ET_RESULTATS.md` | Rapport professionnel des poids et resultats |
 | `CONTROLE_FINAL_CONFORMITE.md` | Checklist finale par rapport au sujet et a la grille |
@@ -37,6 +39,18 @@ Lancer Pac-Man avec RLMinimax :
 
 ```bash
 python pacman.py -p RLMinimaxAgent -l smallClassic -a depth=2
+```
+
+Generer les graphiques de comparaison (sortie dans `output/`) :
+
+```bash
+python plot_comparison.py
+```
+
+Regenerer le PDF du rapport final :
+
+```bash
+python generate_rapport.py
 ```
 
 Attention : `python train.py` relance un entrainement et reecrit `weights.json`.
