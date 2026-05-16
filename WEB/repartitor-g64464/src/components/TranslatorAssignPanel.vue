@@ -4,6 +4,9 @@
 <script setup>
 import { ref } from "vue";
 import PersonTable from "@/components/PersonTable.vue";
+import { useNotifications } from "@/composables/useNotifications";
+
+const { notify } = useNotifications();
 
 const props = defineProps({
   // la liste des traducteurs disponibles   
@@ -58,7 +61,7 @@ function formatShortDate(dateStr) {
 // fonction qui est appelée quand le repartiteur clique sur le bouton "Valider" pour enregistrer son choix de traducteur et de deadline
 function submit() {
   if (!selectedTranslator.value || !translationDeadline.value) {
-    alert("Veuillez sélectionner un traducteur et une date limite.");
+    notify("Veuillez sélectionner un traducteur et une date limite.", "info");
     return;
   }
   emit("assign", {

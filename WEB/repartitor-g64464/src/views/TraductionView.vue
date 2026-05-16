@@ -9,8 +9,10 @@ import {
   finishTranslation,
 } from "@/services/translationService";
 import WorkerTextsTable from "@/components/WorkerTextsTable.vue";
+import { useNotifications } from "@/composables/useNotifications";
 
 const roleStore = useRoleStore();
+const { notify } = useNotifications();
 const translations = ref([]); // Liste des traductions du traducteur 
 const loading = ref(true); // Indique si les données sont en cours de chargement 
 
@@ -30,8 +32,12 @@ async function handleFinish(translation) {
     translation.text.id,
     roleStore.identityId,
   );
-  if (success) await loadData();
-  else alert("Erreur lors de la mise a jour. Veuillez reessayer.");
+  if (success) {
+    notify("Traduction marquée comme terminée.", "success");
+    await loadData();
+  } else {
+    notify("Erreur lors de la mise à jour. Veuillez réessayer.", "error");
+  }
 }
 </script>
 

@@ -12,9 +12,11 @@ import { assignEdition } from "@/services/editionService";
 import TextInfoCard from "@/components/TextInfoCard.vue";
 import TranslatorAssignPanel from "@/components/TranslatorAssignPanel.vue";
 import EditorAssignPanel from "@/components/EditorAssignPanel.vue";
+import { useNotifications } from "@/composables/useNotifications";
 
 const route = useRoute();
 const router = useRouter();
+const { notify } = useNotifications();
 
 const text = ref(null); // le texte a attribuer
 const loading = ref(true);
@@ -51,13 +53,13 @@ onMounted(loadData); // On éxecute la fonction loadData au chargement du compos
 watch(() => route.params.id, loadData); // Si l'id du texte change ( par exemple si on passe a un autre texte )  , on relance la fonction loadData pour recharger les nouvelles données 
 
 async function handleTranslatorAssign({ translator, deadline }) {
-    // Je récupère le traducteur sélectionné et la deadline depuis le composant enfant
+  // Je récupère le traducteur sélectionné et la deadline depuis le composant enfant
   const result = await assignTranslation(text.value.id, translator.id, deadline);
   if (result) {
-    alert("Traduction attribuee avec succes !");
+    notify("Traduction attribuée avec succès.", "success");
     await loadData();
   } else {
-    alert("Erreur lors de l'attribution.");
+    notify("Erreur lors de l'attribution de la traduction.", "error");
   }
 }
 
@@ -70,14 +72,14 @@ function getTranslatorForEdition() {
 }
 
 async function handleEditorAssign({ editor }) {
-    // Je veux récupérer le trigramme du traducteur déjà assigné (s'il existe) pour le passer à l'édition
+  // Je veux récupérer le trigramme du traducteur déjà assigné (s'il existe) pour le passer à l'édition
   const translatedBy = getTranslatorForEdition();
   const result = await assignEdition(text.value.id, editor.id, translatedBy);
   if (result) {
-    alert("Edition attribuee avec succes !");
+    notify("Édition attribuée avec succès.", "success");
     await loadData();
   } else {
-    alert("Erreur lors de l'attribution.");
+    notify("Erreur lors de l'attribution de l'édition.", "error");
   }
 }
 

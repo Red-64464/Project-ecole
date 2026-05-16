@@ -10,8 +10,10 @@ import {
   isTranslationFinished,
 } from "@/services/editionService";
 import WorkerTextsTable from "@/components/WorkerTextsTable.vue";
+import { useNotifications } from "@/composables/useNotifications";
 
 const roleStore = useRoleStore();
+const { notify } = useNotifications();
 const editions = ref([]); // Liste des éditions de l'éditeur (avec les infos du texte et du traducteur)
 const loading = ref(true);
 const translationStatuses = ref({}); // Objet qui stocke pour chaque texte si sa traduction est terminée  car un éditeur ne peut pas traduire un texte que si sa traduction est finie
@@ -35,12 +37,19 @@ onMounted(loadData); // On éxecute la fonction loadData au chargement du compos
 async function handleFinish(edition) {
   const done = await isTranslationFinished(edition.text.id);
   if (!done) {
-    alert("La traduction n'est pas encore terminee. Vous ne pouvez pas editer ce texte.");
+    notify(
+      "La traduction n'est pas encore terminée. Vous ne pouvez pas éditer ce texte.",
+      "error",
+    );
     return;
   }
   const success = await finishEdition(edition.text.id, roleStore.identityId);
-  if (success) await loadData();
-  else alert("Erreur lors de la mise a jour. Veuillez reessayer.");
+  if (success) {
+    notify("Édition marquée comme terminée.", "success");
+    await loadData();
+  } else {
+    notify("Erreur lors de la mise à jour. Veuillez réessayer.", "error");
+  }
 }
 </script>
 
